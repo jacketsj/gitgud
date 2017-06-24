@@ -18,7 +18,7 @@ class GitGudModel():
         # go though datframe and parse data and assign labels
         X = df['msg']
 
-        self._vect = CountVectorizer(analyzer='word', stop_words='english', max_features = 850, ngram_range=(1, 1), 
+        self._vect = CountVectorizer(analyzer='word', stop_words='english', max_features = 850, ngram_range=(1, 1),
                            binary=False, lowercase=True)
         mcl_transformed = self._vect.fit_transform(X)
         # print(type(mcl_transformed))
@@ -109,10 +109,25 @@ def has_swear(msg, weight):
     outcome = 1
     return outcome * weight
 
+def commit_subject_doesnt_end_with_period(msg, weight):
+    # Split by \s\s
+    msg = msg.split('  ')
+
+    # Assume subject doesnt end with period
+    outcome = 1
+
+    if msg[0].endswith('.'):
+        outcome = 0
+
+    return outcome * weight
+
 def label_data(df, good_thresh = .5):
     label = []
 
-    functions = [(has_swear, .6)]
+    functions = [
+        (has_swear, .6),
+        (commit_subject_doesnt_end_with_period, .5),
+    ]
 
     for index, row in df.iterrows():
         score = 0
