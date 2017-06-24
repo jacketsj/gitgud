@@ -14,10 +14,6 @@ class GitGudModel():
         self.dataframe = dataframe
         pass
 
-    def engineer_features():
-        # 
-        pass
-
     def parse_and_split_data(self, df, *, star_thresh=200, fork_thresh=50, watchers_thresh=30):
         # go though datframe and parse data and assign labels
         X = df['msg']
@@ -94,9 +90,51 @@ def get_data():
     return df
 
 
+def get_csv_data():
+    # Dummy get data function
+    column_names = [
+        "msg",
+        "id",
+        "stars",
+        "forks",
+        "watchers"
+    ]
+
+    df = pd.read_csv('../../data/google_commits.csv', names=column_names)
+
+    return df
+
+def has_swear(msg, weight):
+
+    outcome = 1
+    return outcome * weight
+
+def label_data(df, good_thresh = .5):
+    label = []
+
+    functions = [(has_swear, .6)]
+
+    for index, row in df.iterrows():
+        score = 0
+        for funct, weight in functions:
+            score += funct(row['msg'], weight)
+        label.append(1 if score > good_thresh else 0)
+    df['label'] = pd.Series(label)
+    return df
+
 def main():
+    # Instantiate the wrapper model
     model = GitGudModel()
-    df = get_data()
+
+    # Read in the scrapped CSV data
+    df = get_csv_data()
+
+    # Label the data
+    df = label_data(df)
+    print(df)
+    exit()
+
+
 
     X_train, X_test, y_train, y_test = model.parse_and_split_data(df)
 
