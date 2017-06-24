@@ -111,13 +111,15 @@ def has_swear(msg, weight):
 
 def label_data(df, good_thresh = .5):
     label = []
-
-    functions = [(has_swear, .6)]
+    negfunctions = [(has_swear, 1)]
+    functions = []
 
     for index, row in df.iterrows():
         score = 0
         for funct, weight in functions:
             score += funct(row['msg'], weight)
+        for funct, weight in negfunctions:
+            score *= funct(row['msg'], weight)
         label.append(1 if score > good_thresh else 0)
     df['label'] = pd.Series(label)
     return df
