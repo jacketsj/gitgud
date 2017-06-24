@@ -115,6 +115,12 @@ def has_swear(msg, weight):
         outcome = expon(len(union) / len(s_msg))
     return outcome * weight
 
+def expon(x):
+    pow = 1-x
+    for i in range (25): #constant time, 50 is arbitrarily chosen
+        pow *= 1-x
+    return pow
+
 def commit_subject_starts_with_capital(msg, weight):
      if msg[0].isupper():
          outcome = 1
