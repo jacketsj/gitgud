@@ -1,5 +1,6 @@
 import re
 import random
+import io
 from threading import Thread
 
 import requests
@@ -64,7 +65,7 @@ loadUserAgents()
 
 THREAD_COUNT = 20;
 
-allUsersRepo = ["https://api.github.com/users/google/repos"]
+allUsersRepo = ["https://api.github.com/users/torvalds/repos"]
 #commit message, repo-id, stars, forks, watchers, additions, deletions
 
 
@@ -78,10 +79,14 @@ def fetchData(startPageClean, repoData, i):
         commit_data_json = moreCommits.json();
         totalCommitData = []
         for commit_data in commit_data_json:
+            curmsg = commit_data["commit"]["message"].replace('\n', ' ').replace('\r', '').replace(",", "");
+            curstars = repoData["stargazers_count"]
+            curforks=repoData["forks"]
+            curwatchers=repoData["watchers_count"]
+            curid=repoData["id"]
             tmpData = CSVData(
-                msg=commit_data["commit"]["message"].replace('\n', ' ').replace('\r', '').replace(",", ""),
-                stars=repoData["stargazers_count"], forks=repoData["forks"],
-                watchers=repoData["watchers_count"], id=repoData["id"])
+                msg=curmsg, stars=curstars, forks=curforks,
+                watchers=curwatchers, id=curid)
             totalCommitData.append(tmpData.getCSVRepresentation())
 
             #f.write(tmpData.getCSVRepresentation() + '\n')
@@ -91,15 +96,16 @@ def fetchData(startPageClean, repoData, i):
 
     except Exception as e:
         print("ERROR IN THREADING CALL: ", repr(e))
+        print(e.__traceback__());
         pass
 
-f = open('linux-commits.csv', 'w')
+f = io.open('linux-commits.csv', 'w', encoding='utf-8')
 for repos in allUsersRepo:
     proxy = randomProxy()
     headers = randomUserAgent()
 
     r = requests.get(repos, proxies=proxy, headers=headers, timeout=5);
-    print (r.text)
+    print (r)
     jsonDataRepos = r.json();
 
     repoDataCount = 0
@@ -186,6 +192,8 @@ for repos in allUsersRepo:
                 # except Exception as e:
                 #     print (e)
 
+        except UnicodeEncodeError:
+            print ('something')
         except Exception as e:
             print("ERROR IN FETCH NEXT PG DATA: ", repr(e))
             continue;
