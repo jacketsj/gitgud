@@ -18,7 +18,7 @@ class GitGudModel():
         # go though datframe and parse data and assign labels
         X = df['msg']
 
-        self._vect = CountVectorizer(analyzer='word', stop_words='english', max_features = 850, ngram_range=(1, 1), 
+        self._vect = CountVectorizer(analyzer='word', stop_words='english', max_features = 850, ngram_range=(1, 1),
                            binary=False, lowercase=True)
         mcl_transformed = self._vect.fit_transform(X)
         # print(type(mcl_transformed))
@@ -105,8 +105,17 @@ def get_csv_data():
     return df
 
 def has_swear(msg, weight):
-
-    outcome = 1
+    with open('../../data_attr/3ds_badwordlist0.txt', 'r') as content_file:
+        content = content_file.read().replace("\r", "")
+        content = content.split("\n")
+        s = set(content)
+        msg = msg.split(' ')
+        s_msg = set(msg)
+        union = set.intersection(*[s, s_msg])
+        if len(union) > 0:
+            outcome = -1
+        else:
+            outcome = 1
     return outcome * weight
 
 def label_data(df, good_thresh = .5):
