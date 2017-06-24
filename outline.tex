@@ -1,28 +1,50 @@
-\documentclass{beamer} //slideshow
+\documentclass{beamer}
 
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows}
+\usetikzlibrary{shapes.geometric, arrows, scopes}
 
 \begin{document}
 
 \begin{frame}
 
-\frametitle{High-Level Program Flow} //map of subprocesses
-	\tikzstyle{subprocess} = [rectangle, rounded corners, minimum width=2cm, minimum height=.5cm,
+\frametitle{High-Level Program Flow}
+	\tikzstyle{subprogram} = [rectangle, minimum width=2cm, minimum height=.5cm,
 		text centered, draw=black, fill=gray]
+	\tikzstyle{subprocess} = [rectangle, rounded corners, minimum width=2cm, minimum height=.5cm,
+		text centered, draw=black, fill=white]
+	\tikzstyle{external} = [rectangle, rounded corners, dashed, minimum width=2cm, minimum height=.5cm,
+		text centered, draw=black, fill=yellow]
 	\tikzstyle{connection} = [thick,-]
-	\begin{tikzpicture}[node distance = 1cm]
-		\node (parser) [subprocess] {Data Parser/Computer};
-		\node (server-interface) [subprocess, below of=parser] {Server Interface};
-		\node (abs) [subprocess, left of=server-interface, xshift=-2.5cm] {Abstraction Layer};
-		\node (gathering) [subprocess, left of=abs, xshift=-3cm] {Data Gathering/Storing};
-		\node (fetch) [subprocess, below of=server-interface] {Client Interfacing};
-		\node (hook) [subprocess, below of=fetch] {Hook(ed) Tool};
-		\draw [connection] (parser) -- (server-interface);
-		\draw [connection] (server-interface) -- (abs);
-		\draw [connection] (abs) -- (gathering);
-		\draw [connection] (fetch) -- (server-interface);
-		\draw [connection] (hook) -- (fetch);
+	\begin{tikzpicture}[node distance = .7cm]
+		\node (server) [subprogram] {
+			Server
+			\begin{tikzpicture}
+				\node (parser) [subprocess] {Data Parser/Computer};
+				\node (server-interface) [subprocess, below of=parser] {Server Interface};
+				\node (abs) [subprocess, left of=server-interface, xshift=-2.5cm] {Abstraction Layer};
+				\node (gathering) [subprocess, below of=abs, xshift=-2cm] {Data Gathering/Storing};
+				\node (network) [external, below of=server-interface] {Network};
+				\draw [connection] (parser) -- (server-interface);
+				\draw [connection] (server-interface) -- (abs);
+				\draw [connection] (abs) -| (gathering);
+				\draw [connection] (network) -- (server-interface);
+			\end{tikzpicture}
+		};
+		
+		\node (client) [subprogram, below of=server, yshift=-2cm] {
+			Client
+			\begin{tikzpicture}
+				\node (network) [external] {Network};
+				\node (fetch) [subprocess, below of=network] {Client Interfacing};
+				\node (hook) [subprocess, below of=fetch] {Hook(ed) Tool};
+				\draw [connection] (hook) -- (fetch);
+				\draw [connection] (network) -- (fetch);
+			\end{tikzpicture}
+		};
+			
+		%\node (server) [fit = (parser)(server-interface)(abs)(gathering), header = Server] {};
+		%\node (client) [fit = (fetch)(hook), header = Client] {};
+		
 	\end{tikzpicture}
 
 \end{frame}
