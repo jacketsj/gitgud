@@ -121,12 +121,27 @@ def commit_subject_doesnt_end_with_period(msg, weight):
 
     return outcome * weight
 
+def commit_subject_is_50chars_long(msg, weight):
+    # Assume subject is under 50 chars
+    outcome = 1
+
+    # Split by \s\s
+    msg = msg.split('  ')
+
+    msglen = len(msg[0])
+
+    if msglen > 50:
+        outcome  = 0
+
+    return outcome * weight
+
 def label_data(df, good_thresh = .5):
     label = []
 
     functions = [
         (has_swear, .6),
         (commit_subject_doesnt_end_with_period, .5),
+        (commit_subject_is_50chars_long, .5),
     ]
 
     for index, row in df.iterrows():
