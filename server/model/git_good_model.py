@@ -112,11 +112,15 @@ def has_swear(msg, weight):
         msg = msg.split(' ')
         s_msg = set(msg)
         union = set.intersection(*[s, s_msg])
-        if len(union) > 0:
-            outcome = -1
-        else:
-            outcome = 1
+        outcome = expon(len(union) / len(s_msg))
     return outcome * weight
+
+def commit_subject_starts_with_capital(msg, weight):
+     if msg[0].isupper():
+         outcome = 1
+     else:
+         outcome = 0
+     return outcome * weight
 
 def label_data(df, good_thresh = .5):
     label = []
