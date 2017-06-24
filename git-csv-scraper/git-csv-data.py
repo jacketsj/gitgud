@@ -1,5 +1,6 @@
 import re
 import random
+from threading import Thread
 
 import requests
 import json
@@ -60,16 +61,45 @@ def randomProxy():
 
 loadProxies()
 loadUserAgents()
+
+THREAD_COUNT = 20;
+
 allUsersRepo = ["https://api.github.com/users/google/repos"]
 #commit message, repo-id, stars, forks, watchers, additions, deletions
 
 
-f = open('csvdata3.txt', 'w')
+
+def fetchData(startPageClean, repoData, i):
+    print("scraping commit page: " + startPageClean)
+    proxy = randomProxy()
+    headers = randomUserAgent()
+    try:
+        moreCommits = requests.get(startPageClean, proxies=proxy, headers=headers, timeout=5);
+        commit_data_json = moreCommits.json();
+        totalCommitData = []
+        for commit_data in commit_data_json:
+            tmpData = CSVData(
+                msg=commit_data["commit"]["message"].replace('\n', ' ').replace('\r', '').replace(",", ""),
+                stars=repoData["stargazers_count"], forks=repoData["forks"],
+                watchers=repoData["watchers_count"], id=repoData["id"])
+            totalCommitData.append(tmpData.getCSVRepresentation())
+
+            #f.write(tmpData.getCSVRepresentation() + '\n')
+
+        results[i] = totalCommitData;
+
+
+    except Exception as e:
+        print("ERROR IN THREADING CALL: ", repr(e))
+        pass
+
+f = open('linux-commits.csv', 'w')
 for repos in allUsersRepo:
     proxy = randomProxy()
     headers = randomUserAgent()
 
     r = requests.get(repos, proxies=proxy, headers=headers, timeout=5);
+    print (r.text)
     jsonDataRepos = r.json();
 
     repoDataCount = 0
@@ -105,35 +135,59 @@ for repos in allUsersRepo:
             startPageClean = pagesURLDirty[pagesURLDirty.find("<")+1:pagesURLDirty.find(">")];
             end = pagesURLDirty.find(">");
             lastPageClean = pagesURLDirty[pagesURLDirty.find("<", end+1)+1:pagesURLDirty.find(">", end+1)]
-            print ("FIRST PAGE: ", startPageClean);
+            #print ("FIRST PAGE: ", startPageClean);
             startPageInt = int(startPageClean[-1])
             lastPageInt = int(lastPageClean.split("=")[1])
-            print ("LAST PAGE: " + str(lastPageInt))
+            print ("LAST PAGE NUMBER IS: " + str(lastPageInt))
             while (startPageInt <= lastPageInt):
-                print ("scraping commit page: " + str(startPageInt))
-                proxy = randomProxy()
-                headers = randomUserAgent()
-                try :
-                    moreCommits = requests.get(startPageClean, proxies=proxy, headers=headers, timeout=5);
-                    commit_data_json = commit_data_request.json();
 
-                    for commit_data in commit_data_json:
-                        tmpData = CSVData(
-                            msg=commit_data["commit"]["message"].replace('\n', ' ').replace('\r', '').replace(",", ""),
-                            stars=repoData["stargazers_count"], forks=repoData["forks"],
-                            watchers=repoData["watchers_count"], id=repoData["id"])
+                threads = [None] * THREAD_COUNT
+                results = [None] * THREAD_COUNT
 
-                        f.write(tmpData.getCSVRepresentation()+'\n')
+                for i in range(len(threads)):
+                    threads[i] = Thread(target=fetchData, args=(startPageClean, repoData, i))
+                    threads[i].start()
+                    startPageInt += 1;
+                    startPageClean = startPageClean.split("=")[0] + "=" + str(startPageInt)
 
-                except Exception as e:
-                    print (e)
+                    if (startPageInt > lastPageInt):
+                        break;
 
-                startPageInt += 1;
-                startPageClean = startPageClean[0:-1] + str(startPageInt)
 
+                for thread in threads:
+                    if thread != None:
+                        thread.join();
+
+
+                for result in results:
+                    if result != None:
+                        for commit in result:
+                            f.write(commit+'\n');
+
+                # print ("scraping commit page: " + str(startPageInt))
+                # proxy = randomProxy()
+                # headers = randomUserAgent()
+                # try :
+                #     moreCommits = requests.get(startPageClean, proxies=proxy, headers=headers, timeout=5);
+                #     commit_data_json = moreCommits.json();
+                #
+                #     for commit_data in commit_data_json:
+                #         tmpData = CSVData(
+                #             msg=commit_data["commit"]["message"].replace('\n', ' ').replace('\r', '').replace(",", ""),
+                #             stars=repoData["stargazers_count"], forks=repoData["forks"],
+                #             watchers=repoData["watchers_count"], id=repoData["id"])
+                #
+                #         f.write(tmpData.getCSVRepresentation()+'\n')
+                #
+                #     startPageInt += 1;
+                #     startPageClean = startPageClean.split("=")[0] + "="+str(startPageInt)
+                #     print("new page: " + startPageClean)
+                #
+                # except Exception as e:
+                #     print (e)
 
         except Exception as e:
-            print(e)
+            print("ERROR IN FETCH NEXT PG DATA: ", repr(e))
             continue;
 
 
