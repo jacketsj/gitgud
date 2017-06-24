@@ -1,0 +1,30 @@
+\documentclass{beamer} //slideshow
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
+\begin{document}
+
+\begin{frame}
+
+\frametitle{High-Level Program Flow} //map of subprocesses
+	\tikzstyle{subprocess} = [rectangle, rounded corners, minimum width=2cm, minimum height=.5cm,
+		text centered, draw=black, fill=gray]
+	\tikzstyle{connection} = [thick,-]
+	\begin{tikzpicture}[node distance = 1cm]
+		\node (parser) [subprocess] {Data Parser/Computer};
+		\node (server-interface) [subprocess, below of=parser] {Server Interface};
+		\node (abs) [subprocess, left of=server-interface, xshift=-2.5cm] {Abstraction Layer};
+		\node (gathering) [subprocess, left of=abs, xshift=-3cm] {Data Gathering/Storing};
+		\node (fetch) [subprocess, below of=server-interface] {Client Interfacing};
+		\node (hook) [subprocess, below of=fetch] {Hook(ed) Tool};
+		\draw [connection] (parser) -- (server-interface);
+		\draw [connection] (server-interface) -- (abs);
+		\draw [connection] (abs) -- (gathering);
+		\draw [connection] (fetch) -- (server-interface);
+		\draw [connection] (hook) -- (fetch);
+	\end{tikzpicture}
+
+\end{frame}
+
+\end{document}
