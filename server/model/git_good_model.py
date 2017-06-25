@@ -11,6 +11,7 @@ import nltk
 from nltk import word_tokenize, pos_tag
 import json
 import time
+import pickle
 
 GOOD = 1
 BAD = 0
@@ -130,7 +131,7 @@ class GitGudModel():
             "watchers"
         ]
 
-        df = pd.read_csv('../git-csv-scraper/microsoft-commits.csv', names=column_names)
+        df = pd.read_csv('../git-csv-scraper/microsoft-commits2.csv', names=column_names)
 
         return df
 
@@ -258,9 +259,9 @@ def main():
 
     # Label the data
     df = model.label_data(df)
-    
+
     print("Engineer features!")
-    
+
     # Engineer Features
     df = model.engineer_features(df)
 
