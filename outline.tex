@@ -18,9 +18,24 @@
 
 \begin{frame}
 
+\frametitle{Table of Contents}
+	\begin{description}
+		\item{(1)}
+		\item{(2)}
+		\item{(3)}
+		\item{(4)}
+		\item{(5)}
+	\end{description}
+
+\end{frame}
+
+\begin{frame}
+
 \frametitle{Git Gud: Overview}
 	\begin{description}
-		\item{-} Analyze git commit subjects and bodies in order to return a rating.
+		\item{-} Analyze commit subjects and bodies in order to return a rating.
+		\item{-} Despite the name, the program could easily be altered to hook
+			SVN, Mercurial, or any number of versioning control systems.
 		\item{-} Use categorization fitting to determine if your commit sucks.
 		\item{-} Extensive collection and categorization of training data.
 		\item{-} Training data includes commits from: Microsoft, Google, Facebook, Linux
@@ -48,13 +63,15 @@
 			\begin{tikzpicture}
 				\node (parser) [subprocess] {Data Parser/Computer};
 				\node (server-interface) [subprocess, below of=parser] {Server Interface};
-				\node (abs) [subprocess, left of=server-interface, xshift=-2.5cm] {Abstraction Layer};
-				\node (gathering) [subprocess, below of=abs, xshift=-2cm] {Data Gathering/Storing};
+				%\node (abs) [subprocess, left of=server-interface, xshift=-2.5cm] {Abstraction Layer};
+				%\node (gathering) [subprocess, below of=abs, xshift=-2cm] {Data Gathering/Storing};
+				\node (gathering) [subprocess, below of=server-interface, xshift=-3.5cm] {Data Gathering/Storing};
 				\node (network) [external, below of=server-interface] {Network};
 				\node (locations) [poss, below of=gathering, xshift=1.5cm] {Github, Team Foundation Services, Bitbucket,etc.};
 				\draw [connection] (parser) -- (server-interface);
-				\draw [connection] (server-interface) -- (abs);
-				\draw [connection] (abs) -| (gathering);
+				%\draw [connection] (server-interface) -- (abs);
+				%\draw [connection] (abs) -| (gathering);
+				\draw [connection] (server-interface) -| (gathering);
 				\draw [connection] (gathering) -- (locations);
 				\draw [connection] (network) -- (server-interface);
 			\end{tikzpicture}
@@ -92,7 +109,7 @@
 			\item{-} ($\Theta(1)$) Max 50 characters in subject
 			\item{-} ($\Theta(1)$) No period at end of subject
 			%technically nlog m, where m is size of dictionary, but m is fixed
-			\item{-} ($\Theta(n)$) Verbs in present tense 
+			\item{-} ($\Theta(n)$) Verbs in present/imperative tense 
 			\item{-} ($\Theta(n)$) Uses bullet points in body
 			%technically nlog m, where m is size of dictionary, but m is fixed
 			\item{-} ($\Theta(n)$) No swear words
@@ -105,7 +122,7 @@
 \begin{frame}
 
 \frametitle{Training Data Flow}
-	\tikzstyle{info} = [rectangle, minimum width=.5cm, minimum height=.5cm, text centered, draw=black, fill=violet]
+	\tikzstyle{info} = [rectangle, minimum width=.5cm, minimum height=.5cm, text centered, draw=black, fill=yellow]
 	\tikzstyle{process} = [rectangle, rounded corners, minimum width=2cm, minimum height=.5cm, text centered, draw=black, fill=white]
 	\tikzstyle{flow} = [thick,->]
 	\tikzstyle{joined} = [-]
@@ -122,6 +139,43 @@
 		\draw [flow] (exp) -| (model);
 		\draw [flow] (commit) -| (model);
 	\end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Examples (1)}
+	Subject: \\%subject
+	Body: \\%body
+	Rating:
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Examples (2)}
+	Subject: \\%subject
+	Body: \\%body
+	Rating:
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Results: Which Organizations know how to Commit?}
+	\begin{description}
+		\item{-} Company: Rating
+		\item{-} Microsoft: Rating
+		\item{-} Google: Rating
+		\item{-} Facebook: Rating
+		\item{-} Linux: Rating
+	\end{description}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Surprise: Interactive Demo}
 
 \end{frame}
 
