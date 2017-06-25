@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 import http.client, urllib.request, urllib.parse, urllib.error, base64
 from scipy.sparse import hstack
-from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support as score
+from sklearn.neural_network import MLPClassifier
 import random
 import nltk
 from nltk import word_tokenize, pos_tag
@@ -18,7 +18,7 @@ BAD = 0
 class GitGudModel():
 
     def __init__(self, dataframe=None):
-        self.model = MultinomialNB()
+        self.model = MLPClassifier(100, logistic)
         self.dataframe = dataframe
         pass
 
@@ -35,7 +35,8 @@ class GitGudModel():
 
         y = df["label"]
 
-        X_train, X_test, y_train, y_test = train_test_split(mcl_transformed, y, test_size=0.1, random_state=random.randint(1, 100))
+        X_train, X_test, y_train, y_test = train_test_split(mcl_transformed, y,
+                                                            test_size=0.1, random_state=random.randint(1, 100))
 
         return (X_train, X_test, y_train, y_test)
 
@@ -220,7 +221,7 @@ class GitGudModel():
         return self.expon((weight * present / total), 5)
 
 
-    def label_data(self, df, good_thresh=.5):
+    def label_data(self, df):
         label = []
 
         negfunctions = [(self.commit_body_has_swear, 1)]
@@ -239,7 +240,7 @@ class GitGudModel():
                 score += funct(row['msg'], weight)
             for funct, weight in negfunctions:
                 score *= funct(row['msg'], weight)
-            label.append(GOOD if score > good_thresh else BAD)
+            label.append(score)
 
         df['label'] = pd.Series(label)
         return df
