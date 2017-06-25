@@ -35,7 +35,7 @@ class GitGudModel():
 
         y = df["label"]
 
-        X_train, X_test, y_train, y_test = train_test_split(mcl_transformed, y, test_size=0.2, random_state=random.randint(1, 10))
+        X_train, X_test, y_train, y_test = train_test_split(mcl_transformed, y, test_size=0.1, random_state=random.randint(1, 100))
 
         return (X_train, X_test, y_train, y_test)
 
@@ -111,6 +111,14 @@ class GitGudModel():
         #
         # print("Accuracy: ",correct/len(y_pred))
 
+    def predict_on_msg(self, msg):
+        msg_transformed = self._vect.fit_transform([[msg]])
+        msg_transformed = hstack((msg_transformed, np.array([0])[:,None]))
+        pred = self.predict(msg_transformed)
+        print(pred)
+        exit()
+        return 1
+
 
 def get_csv_data():
     # Dummy get data function
@@ -122,7 +130,7 @@ def get_csv_data():
         "watchers"
     ]
 
-    df = pd.read_csv('../../git-csv-scraper/linux-commits2.csv', names=column_names)
+    df = pd.read_csv('../../git-csv-scraper/microsoft-commits.csv', names=column_names)
 
     return df
 
@@ -271,6 +279,7 @@ def main():
     pred = model.predict(X_test)
 
     model.report_scores(pred, y_test)
+
 
 
 if __name__ == '__main__':
