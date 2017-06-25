@@ -3,7 +3,47 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows, scopes}
 
+\title{\Large \bf Git Gud}
+\author{Annafi A., Balmer T., Hassam H., Platonov D., Senekal R., Spalding-Jamieson J., and Sauren}
+\institute{Students of UBC, UVic, and SFU} % not endorsed
+\date{June 25, 2017}
+
 \begin{document}
+
+
+\begin{frame}
+	%\maketitle
+	\titlepage
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Table of Contents}
+	\begin{description}
+		\item{(1)}
+		\item{(2)}
+		\item{(3)}
+		\item{(4)}
+		\item{(5)}
+	\end{description}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Git Gud: Overview}
+	\begin{description}
+		\item{-} Analyze commit subjects and bodies in order to return a rating.
+		\item{-} Despite the name, the program could easily be altered to hook
+			SVN, Mercurial, or any number of versioning control systems.
+		\item{-} Use categorization fitting to determine if your commit sucks.
+		\item{-} Extensive collection and categorization of training data.
+		\item{-} Training data includes commits from: Microsoft, Google, Facebook, Linux
+		\item{-} Training data was obtained through GitHub, although other sources could easily be added,
+			such as Visual Studio Team Foundation Services and Bitbucket.
+	\end{description}
+
+\end{frame}
 
 \begin{frame}
 
@@ -14,6 +54,8 @@
 		text centered, draw=black, fill=white]
 	\tikzstyle{external} = [rectangle, rounded corners, dashed, minimum width=2cm, minimum height=.5cm,
 		text centered, draw=black, fill=yellow]
+	\tikzstyle{poss} = [rectangle, rounded corners, dashed, minimum width=2cm, minimum height=.5cm,
+		text centered, draw=white, fill=orange]
 	\tikzstyle{connection} = [thick,-]
 	\begin{tikzpicture}[node distance = .7cm]
 		\node (server) [subprogram] {
@@ -21,24 +63,30 @@
 			\begin{tikzpicture}
 				\node (parser) [subprocess] {Data Parser/Computer};
 				\node (server-interface) [subprocess, below of=parser] {Server Interface};
-				\node (abs) [subprocess, left of=server-interface, xshift=-2.5cm] {Abstraction Layer};
-				\node (gathering) [subprocess, below of=abs, xshift=-2cm] {Data Gathering/Storing};
+				%\node (abs) [subprocess, left of=server-interface, xshift=-2.5cm] {Abstraction Layer};
+				%\node (gathering) [subprocess, below of=abs, xshift=-2cm] {Data Gathering/Storing};
+				\node (gathering) [subprocess, below of=server-interface, xshift=-3.5cm] {Data Gathering/Storing};
 				\node (network) [external, below of=server-interface] {Network};
+				\node (locations) [poss, below of=gathering, xshift=1.5cm] {Github, Team Foundation Services, Bitbucket,etc.};
 				\draw [connection] (parser) -- (server-interface);
-				\draw [connection] (server-interface) -- (abs);
-				\draw [connection] (abs) -| (gathering);
+				%\draw [connection] (server-interface) -- (abs);
+				%\draw [connection] (abs) -| (gathering);
+				\draw [connection] (server-interface) -| (gathering);
+				\draw [connection] (gathering) -- (locations);
 				\draw [connection] (network) -- (server-interface);
 			\end{tikzpicture}
 		};
 		
-		\node (client) [subprogram, below of=server, yshift=-2cm] {
+		\node (client) [subprogram, below of=server, yshift=-2.4cm] {
 			Client
 			\begin{tikzpicture}
 				\node (network) [external] {Network};
 				\node (fetch) [subprocess, below of=network] {Client Interfacing};
 				\node (hook) [subprocess, below of=fetch] {Hook(ed) Tool};
+				\node (tools) [poss, below of=hook] {Git from terminal, Git plugins, etc.};
 				\draw [connection] (hook) -- (fetch);
 				\draw [connection] (network) -- (fetch);
+				\draw [connection] (tools) -- (hook);
 			\end{tikzpicture}
 		};
 			
@@ -46,6 +94,88 @@
 		%\node (client) [fit = (fetch)(hook), header = Client] {};
 		
 	\end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Training: Data Labelling}
+	\begin{description}
+		\item{-} Uses definitive rules in combination with Fork, Watch, Stars, and keywords in order to calculate quality.
+		\item{-} Definitive rules should give the model a baseline for what is important (because they are important).
+		\item{-} Definitive rules include:
+		\begin{description}
+			\item{-} ($\Theta(1)$) Capitalized subject
+			\item{-} ($\Theta(1)$) Max 50 characters in subject
+			\item{-} ($\Theta(1)$) No period at end of subject
+			%technically nlog m, where m is size of dictionary, but m is fixed
+			\item{-} ($\Theta(n)$) Verbs in present/imperative tense 
+			\item{-} ($\Theta(n)$) Uses bullet points in body
+			%technically nlog m, where m is size of dictionary, but m is fixed
+			\item{-} ($\Theta(n)$) No swear words
+		\end{description}
+		\item{-} Keywords are found using the Mircosoft Cognitive Services to check topic consistency for commits.
+	\end{description}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Training Data Flow}
+	\tikzstyle{info} = [rectangle, minimum width=.5cm, minimum height=.5cm, text centered, draw=black, fill=yellow]
+	\tikzstyle{process} = [rectangle, rounded corners, minimum width=2cm, minimum height=.5cm, text centered, draw=black, fill=white]
+	\tikzstyle{flow} = [thick,->]
+	\tikzstyle{joined} = [-]
+	\begin{tikzpicture}[node distance = 1.7cm]
+		\node (metadata) [info] {Forks, Stars, Watches};
+		\node (commit) [info, right of=metadata, xshift=2cm] {Commit Message};
+		\node (rater) [process, below of=commit] {Sample Data Rater};
+		\node (exp) [info, below of=rater] {Expected Values};
+		\node (model) [process, right of=rater, xshift=1.5cm, minimum width = 2.25cm, minimum height = 1.75cm] {Model};
+		\draw [joined] (commit) -- (metadata);
+		\draw [flow] (commit) -- (rater);
+		\draw [flow] (metadata) |- (rater);
+		\draw [flow] (rater) -- (exp);
+		\draw [flow] (exp) -| (model);
+		\draw [flow] (commit) -| (model);
+	\end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Examples (1)}
+	Subject: \\%subject
+	Body: \\%body
+	Rating:
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Examples (2)}
+	Subject: \\%subject
+	Body: \\%body
+	Rating:
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Results: Which Organizations know how to Commit?}
+	\begin{description}
+		\item{-} Company: Rating
+		\item{-} Microsoft: Rating
+		\item{-} Google: Rating
+		\item{-} Facebook: Rating
+		\item{-} Linux: Rating
+	\end{description}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Surprise: Interactive Demo}
 
 \end{frame}
 
