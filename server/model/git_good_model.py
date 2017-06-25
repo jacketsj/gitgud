@@ -28,7 +28,7 @@ class GitGudModel():
         X = df['msg']
 
         self._vect = CountVectorizer(analyzer='word', stop_words='english', max_features = 850, ngram_range=(1, 1),
-                           binary=False, lowercase=True)
+                           binary=False)
         mcl_transformed = self._vect.fit_transform(X)
 
         # Adding Keyword Counts to X
