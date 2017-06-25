@@ -134,7 +134,10 @@ def determine_tense_input(msg, weight):
     text = word_tokenize(msg)
     tagged = pos_tag(text)
     present = len([word for word in tagged if word[1] in ["VBP", "VBZ","VBG"]])
-    total= len([word for word in tagged if word[1] in ["VBD", "VB", "VBG", "VBN", "VBP", "VBZ"]])
+    total = len([word for word in tagged if word[1] in ["VBD", "VB", "VBN"]]) + present
+    if total == 0:
+        print("none")
+        return weight
     return(weight * present / total)
 
 def label_data(df, good_thresh = .5):
@@ -151,6 +154,11 @@ def label_data(df, good_thresh = .5):
     return df
 
 def main():
+    a = determine_tense_input("learnt", 1)
+    print (a)
+    exit()
+
+
     # Instantiate the wrapper model
     model = GitGudModel()
 
