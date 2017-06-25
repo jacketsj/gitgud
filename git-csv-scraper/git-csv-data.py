@@ -63,9 +63,9 @@ def randomProxy():
 loadProxies()
 loadUserAgents()
 
-THREAD_COUNT = 20;
+THREAD_COUNT = 30;
 
-allUsersRepo = ["https://api.github.com/users/torvalds/repos"]
+allUsersRepo = ["https://api.github.com/users/facebook/repos?per_page=100"]
 #commit message, repo-id, stars, forks, watchers, additions, deletions
 
 
@@ -99,13 +99,13 @@ def fetchData(startPageClean, repoData, i):
         print(e.__traceback__());
         pass
 
-f = io.open('linux-commits.csv', 'w', encoding='utf-8')
+f = io.open('facebook-commits.csv', 'w', encoding='utf-8')
 for repos in allUsersRepo:
     proxy = randomProxy()
     headers = randomUserAgent()
 
     r = requests.get(repos, proxies=proxy, headers=headers, timeout=5);
-    print (r)
+    print (r.text)
     jsonDataRepos = r.json();
 
     repoDataCount = 0
@@ -115,7 +115,7 @@ for repos in allUsersRepo:
         #tmpData = CSVData(stars=repoData["stargazers_count"], forks=repoData["forks"], watchers=repoData["watchers_count"])
         cleanCommitUrl = repoData["commits_url"];
         cleanCommitUrl = cleanCommitUrl[0:cleanCommitUrl.index("{")]
-
+        cleanCommitUrl += "?per_page=100"
         proxy = randomProxy()
         headers = randomUserAgent()
         try:
@@ -142,8 +142,9 @@ for repos in allUsersRepo:
             end = pagesURLDirty.find(">");
             lastPageClean = pagesURLDirty[pagesURLDirty.find("<", end+1)+1:pagesURLDirty.find(">", end+1)]
             #print ("FIRST PAGE: ", startPageClean);
+            print ("LPC: ", lastPageClean)
             startPageInt = int(startPageClean[-1])
-            lastPageInt = int(lastPageClean.split("=")[1])
+            lastPageInt = int(lastPageClean.split("&page=")[1])
             print ("LAST PAGE NUMBER IS: " + str(lastPageInt))
             while (startPageInt <= lastPageInt):
 
@@ -154,7 +155,7 @@ for repos in allUsersRepo:
                     threads[i] = Thread(target=fetchData, args=(startPageClean, repoData, i))
                     threads[i].start()
                     startPageInt += 1;
-                    startPageClean = startPageClean.split("=")[0] + "=" + str(startPageInt)
+                    startPageClean = startPageClean.split("&page=",1)[0] + "&page=" + str(startPageInt)
 
                     if (startPageInt > lastPageInt):
                         break;
