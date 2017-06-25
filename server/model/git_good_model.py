@@ -32,12 +32,13 @@ class GitGudModel():
         mcl_transformed = self._vect.fit_transform(X)
 
         # Adding Keyword Counts to X
-        mcl_transformed = hstack((mcl_transformed, np.array(df['kwcount'])[:,None]))
+        # mcl_transformed = hstack((mcl_transformed, np.array(df['kwcount'])[:,None]))
 
         y = df["label"]
 
         X_train, X_test, y_train, y_test = train_test_split(mcl_transformed, y, test_size=0.1, random_state=random.randint(1, 100))
 
+        self.X = X
         return (X_train, X_test, y_train, y_test)
 
 
@@ -94,7 +95,7 @@ class GitGudModel():
         return self
 
     def predict(self, X):
-        return list(self.model.predict(X))
+        return self.model.predict(X)
 
 
     def report_scores(self, y_pred, y_actual):
@@ -113,12 +114,15 @@ class GitGudModel():
         # print("Accuracy: ",correct/len(y_pred))
 
     def predict_on_msg(self, msg):
-        msg_transformed = self._vect.fit_transform([msg])
-        msg_transformed = hstack((msg_transformed, np.array([0])[:,None]))
-        pred = self.predict(msg_transformed)
+        ser = pd.Series([msg])
+        new = self.X.append(ser)
+        msg_transformed = self._vect.fit_transform(new)
+        # ser2 = pd.Series([0])
+        # msg_transformed = hstack((msg_transformed, np.array(ser2)[:,None]))
+        # print(msg_transformed)
+        pred = self.predict(msg_transformed[-1])
         print(pred)
-        exit()
-        return 1
+        return pred
 
 
     def get_csv_data(self):

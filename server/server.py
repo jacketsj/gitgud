@@ -13,13 +13,13 @@ def check_message():
     print(request.data)
 
     msg = request.get_json()['message']
-    print(msg)
+    # print(msg)
 
     # Pass message to model, return predicted quality of message
-    print(model)
-    model.predict_on_msg(msg)
+    # print(model)
+    pred = model.predict_on_msg(msg)
 
-    return 'Hello, World!'
+    return str(pred[0])
 
 
 if __name__ == '__main__':
