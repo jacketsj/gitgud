@@ -3,6 +3,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split
 import random
+import re
 
 GOOD = 0
 BAD = 1
@@ -131,7 +132,29 @@ def commit_subject_is_50chars_long(msg, weight):
     msglen = len(msg[0])
 
     if msglen > 50:
-        outcome  = 0
+        outcome = 0
+
+    return outcome * weight
+
+def commit_body_has_bullet_points(msg, weight):
+    outcome = 0
+
+    delimiter = [' - ', ' * ']
+
+    def has_delimiter(msg):
+        for d in delimiter:
+            # If delimiter exist
+            if msg.find(d) is not -1:
+                return True
+
+    def has_list(msg):
+        for d in delimiter:
+            # If message contains the delimiter more than once
+            if msg.find(d) > 1:
+                return True
+
+    if has_delimiter(msg) and has_list(msg):
+        outcome = 1
 
     return outcome * weight
 
