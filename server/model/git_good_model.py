@@ -11,6 +11,7 @@ import nltk
 from nltk import word_tokenize, pos_tag
 import json
 import time
+import pickle
 
 GOOD = 1
 BAD = 0
@@ -258,9 +259,9 @@ def main():
 
     # Label the data
     df = model.label_data(df)
-    
+
     print("Engineer features!")
-    
+
     # Engineer Features
     df = model.engineer_features(df)
 

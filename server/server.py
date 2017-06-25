@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import request
 import json
+import pickle
 from model.git_good_model import GitGudModel
 app = Flask(__name__)
 
@@ -23,39 +24,48 @@ def check_message():
 
 if __name__ == '__main__':
 
-    # Instantiate the wrapper model
-    model = GitGudModel()
+    if(True): # If {True}, we are saving the model to pkl file.
 
-    print("Getting data!")
+        # Instantiate the wrapper model
+        model = GitGudModel()
 
-    # Read in the scrapped CSV data
-    df = model.get_csv_data()
+        print("Getting data!")
 
-    print("Labeling data")
+        # Read in the scrapped CSV data
+        df = model.get_csv_data()
 
-    # Label the data
-    df = model.label_data(df)
-    
-    print("Engineer features!")
-    
-    # Engineer Features
-    df = model.engineer_features(df)
+        print("Labeling data")
 
-    print("Parse and split!")
+        # Label the data
+        df = model.label_data(df)
 
-    X_train, X_test, y_train, y_test = model.parse_and_split_data(df)
+        print("Engineer features!")
 
-    print("Training")
+        # Engineer Features
+        df = model.engineer_features(df)
 
-    # Train the model
-    model = model.train(X_train, y_train)
+        print("Parse and split!")
 
-    print("Predict")
+        X_train, X_test, y_train, y_test = model.parse_and_split_data(df)
+
+        print("Training")
+
+        # Train the model
+        model = model.train(X_train, y_train)
+
+        # Save model to pkl file
+        with open('commit_model.pkl', 'wb') as fid:
+            pickle.dump(model, fid)
+
+    else:
+        with open('commit_model.pkl', 'rb') as fid:
+            model = pickle.load(fid)
+
+    # print("Predict")
 
     # Predict on the model
-    pred = model.predict(X_test)
+    # pred = model.predict(X_test)
 
-    model.report_scores(pred, y_test)
+    # model.report_scores(pred, y_test)
 
     app.run()
-    

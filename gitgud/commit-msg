@@ -23,7 +23,6 @@ def continue_commit_prompt():
 	valid = {"": True, "yes": True, "y": True, "no": False, "n": False}
 	sys.stdin = open("/dev/tty", "r")
 	choice = raw_input().lower()
-
 	return valid[choice]
 
 
