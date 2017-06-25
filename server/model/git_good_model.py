@@ -3,6 +3,8 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split
 import random
+import nltk
+from nltk import word_tokenize, pos_tag
 
 GOOD = 0
 BAD = 1
@@ -105,8 +107,14 @@ def get_csv_data():
     return df
 
 def has_swear(msg, weight):
-
-    outcome = 1
+    with open('../../data_attr/3ds_badwordlist0.txt', 'r') as content_file:
+        content = content_file.read().replace("\r", "")
+        content = content.split("\n")
+        s = set(content)
+        msg = msg.split(' ')
+        s_msg = set(msg)
+        union = set.intersection(*[s, s_msg])
+        outcome = expon((1 - len(union) / len(s_msg)), 25)
     return outcome * weight
 
 def commit_subject_doesnt_end_with_period(msg, weight):
@@ -157,13 +165,39 @@ def commit_body_has_bullet_points(msg, weight):
 
     return outcome * weight
 
+def expon(x, k):
+    pow = x
+    for i in range (k): #constant time, 50 is arbitrarily chosen
+        pow *= x
+    return pow
+
+def commit_subject_starts_with_capital(msg, weight):
+     if msg[0].isupper():
+         outcome = 1
+     else:
+         outcome = 0
+     return outcome * weight
+
+def commit_body_has_present_tense(msg, weight):
+    text = word_tokenize(msg)
+    tagged = pos_tag(text)
+    present = len([word for word in tagged if word[1] in ["VBP", "VBZ","VBG", "VB"]])
+    total = len([word for word in tagged if word[1] in ["VBD", "VBN"]]) + present
+    if total == 0:
+        return weight
+
+    return expon((weight * present / total), 5)
+
 def label_data(df, good_thresh = .5):
     label = []
 
     functions = [
-        (has_swear, .6),
-        (commit_subject_doesnt_end_with_period, .5),
-        (commit_subject_is_50chars_long, .5),
+        (has_swear, .16),
+        (commit_body_has_present_tense, .16),
+        (commit_body_has_bullet_points, .16),
+        (commit_subject_is_50chars_long, .16),
+        (commit_subject_doesnt_end_with_period, .16),
+        (commit_subject_starts_with_capital, .16),
     ]
 
     for index, row in df.iterrows():
