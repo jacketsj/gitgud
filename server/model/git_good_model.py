@@ -3,7 +3,6 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split
 import random
-import re
 
 GOOD = 0
 BAD = 1
