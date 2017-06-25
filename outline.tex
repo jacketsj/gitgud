@@ -14,6 +14,8 @@
 		text centered, draw=black, fill=white]
 	\tikzstyle{external} = [rectangle, rounded corners, dashed, minimum width=2cm, minimum height=.5cm,
 		text centered, draw=black, fill=yellow]
+	\tikzstyle{poss} = [rectangle, rounded corners, dashed, minimum width=2cm, minimum height=.5cm,
+		text centered, draw=white, fill=orange]
 	\tikzstyle{connection} = [thick,-]
 	\begin{tikzpicture}[node distance = .7cm]
 		\node (server) [subprogram] {
@@ -24,27 +26,54 @@
 				\node (abs) [subprocess, left of=server-interface, xshift=-2.5cm] {Abstraction Layer};
 				\node (gathering) [subprocess, below of=abs, xshift=-2cm] {Data Gathering/Storing};
 				\node (network) [external, below of=server-interface] {Network};
+				\node (locations) [poss, below of=gathering, xshift=1.5cm] {Github, Team Foundation Services, Bitbucket,etc.};
 				\draw [connection] (parser) -- (server-interface);
 				\draw [connection] (server-interface) -- (abs);
 				\draw [connection] (abs) -| (gathering);
+				\draw [connection] (gathering) -- (locations);
 				\draw [connection] (network) -- (server-interface);
 			\end{tikzpicture}
 		};
 		
-		\node (client) [subprogram, below of=server, yshift=-2cm] {
+		\node (client) [subprogram, below of=server, yshift=-2.4cm] {
 			Client
 			\begin{tikzpicture}
 				\node (network) [external] {Network};
 				\node (fetch) [subprocess, below of=network] {Client Interfacing};
 				\node (hook) [subprocess, below of=fetch] {Hook(ed) Tool};
+				\node (tools) [poss, below of=hook] {Git from terminal, Git plugins, etc.};
 				\draw [connection] (hook) -- (fetch);
 				\draw [connection] (network) -- (fetch);
+				\draw [connection] (tools) -- (hook);
 			\end{tikzpicture}
 		};
 			
 		%\node (server) [fit = (parser)(server-interface)(abs)(gathering), header = Server] {};
 		%\node (client) [fit = (fetch)(hook), header = Client] {};
 		
+	\end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+
+\frametitle{Training Data Flow}
+	\tikzstyle{info} = [rectangle, minimum width=.5cm, minimum height=.5cm, text centered, draw=black, fill=violet]
+	\tikzstyle{process} = [rectangle, rounded corners, minimum width=2cm, minimum height=.5cm, text centered, draw=black, fill=white]
+	\tikzstyle{flow} = [thick,->]
+	\tikzstyle{joined} = [-]
+	\begin{tikzpicture}[node distance = 1.7cm]
+		\node (metadata) [info] {Forks, Stars, Watches};
+		\node (commit) [info, right of=metadata, xshift=2cm] {Commit Message};
+		\node (rater) [process, below of=commit] {Sample Data Rater};
+		\node (exp) [info, below of=rater] {Expected Values};
+		\node (model) [process, right of=rater, xshift=1.5cm] {Model};
+		\draw [joined] (commit) -- (metadata);
+		\draw [flow] (commit) -- (rater);
+		\draw [flow] (metadata) |- (rater);
+		\draw [flow] (rater) -- (exp);
+		\draw [flow] (exp) -| (model);
+		\draw [flow] (commit) -| (model);
 	\end{tikzpicture}
 
 \end{frame}
