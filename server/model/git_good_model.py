@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import http.client, urllib.request, urllib.parse, urllib.error, base64
+from scipy.sparse import hstack
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split
@@ -27,9 +28,9 @@ class GitGudModel():
         self._vect = CountVectorizer(analyzer='word', stop_words='english', max_features = 850, ngram_range=(1, 1),
                            binary=False, lowercase=True)
         mcl_transformed = self._vect.fit_transform(X)
-        # print(type(mcl_transformed))
-        # print(X)
-        # exit()
+
+        # Adding Keyword Counts to X
+        mcl_transformed = hstack((mcl_transformed, np.array(df['kwcount'])[:,None]))
 
         y = df["label"]
 
@@ -39,9 +40,10 @@ class GitGudModel():
 
 
     def engineer_features(self, df):
-        keyword_counts = self._get_keywords(df['msg'])
-        df['kwcount'] = pd.Series(keyword_counts)
-        print(df)
+        # keyword_counts = self._get_keywords(df['msg'])
+        # df['kwcount'] = pd.Series(keyword_counts)
+        df['kwcount'] = pd.Series(np.zeros(df.shape[0]))
+
         return df
 
 
@@ -88,7 +90,6 @@ class GitGudModel():
     def train(self, X, y):
         self.model = self.model.fit(X,y)
         return self
-        pass
 
     def predict(self, X):
         return list(self.model.predict(X))
@@ -167,8 +168,6 @@ def label_data(df, good_thresh = .5):
     return df
 
 
-
-
 def main():
     # Instantiate the wrapper model
     model = GitGudModel()
@@ -191,8 +190,6 @@ def main():
     pred = model.predict(X_test)
 
     model.report_scores(pred, y_test)
-
-    pass
 
 
 if __name__ == '__main__':
