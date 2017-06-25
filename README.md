@@ -6,7 +6,7 @@ Not sure about your commit message quality? Git gud.
 ### NLTK
 ```
 $ sudo pip3 install nltk
->>> python3
+$ python3
 >>> import nltk
 >>> nltk.download('all')
 ```
