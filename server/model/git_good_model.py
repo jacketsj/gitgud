@@ -191,7 +191,7 @@ def commit_body_has_bullet_points(msg, weight):
 
 
 def expon(x, k):
-    return x**k
+    return x**(k+1)
 
 def commit_subject_starts_with_capital(msg, weight):
      if msg[0].isupper():
