@@ -15,11 +15,13 @@ def check_message():
     print(msg)
 
     # Pass message to model, return predicted quality of message
+    print(model)
     model.predict_on_msg(msg)
 
     return 'Hello, World!'
 
-def main():
+
+if __name__ == '__main__':
 
     # Instantiate the wrapper model
     model = GitGudModel()
@@ -55,8 +57,5 @@ def main():
 
     model.report_scores(pred, y_test)
 
-
-if __name__ == '__main__':
-    main()
     app.run()
     

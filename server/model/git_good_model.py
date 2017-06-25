@@ -112,7 +112,7 @@ class GitGudModel():
         # print("Accuracy: ",correct/len(y_pred))
 
     def predict_on_msg(self, msg):
-        msg_transformed = self._vect.fit_transform([[msg]])
+        msg_transformed = self._vect.fit_transform([msg])
         msg_transformed = hstack((msg_transformed, np.array([0])[:,None]))
         pred = self.predict(msg_transformed)
         print(pred)
@@ -130,7 +130,7 @@ class GitGudModel():
             "watchers"
         ]
 
-        df = pd.read_csv('../git-csv-scraper/microsoft-commits.csv', names=column_names)
+        df = pd.read_csv('../git-csv-scraper/microsoft-commits2.csv', names=column_names)
 
         return df
 
