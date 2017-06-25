@@ -3,6 +3,8 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.model_selection import train_test_split
 import random
+import nltk
+from nltk import word_tokenize, pos_tag
 
 GOOD = 0
 BAD = 1
@@ -127,6 +129,13 @@ def commit_subject_starts_with_capital(msg, weight):
      else:
          outcome = 0
      return outcome * weight
+
+def determine_tense_input(msg, weight):
+    text = word_tokenize(msg)
+    tagged = pos_tag(text)
+    present = len([word for word in tagged if word[1] in ["VBP", "VBZ","VBG"]])
+    total= len([word for word in tagged if word[1] in ["VBD", "VB", "VBG", "VBN", "VBP", "VBZ"]])
+    return(weight * present / total)
 
 def label_data(df, good_thresh = .5):
     label = []
