@@ -3,8 +3,7 @@ import sys
 import git
 import os
 import requests
-import termios
-from termios import tcflush, TCIFLUSH
+import json
 
 
 
@@ -12,12 +11,11 @@ from termios import tcflush, TCIFLUSH
 
 
 def postMessage(message):
-	url = ""
+	url = "http://127.0.0.1:5000/api/check_message"
 	data = {'message': message}
 	headers = {'Content-type': 'application/json'}
-	#r = requests.post(url, data=json.dumps(data), headers=headers)
-	# r.json
-	return False
+	r = requests.post(url, data=json.dumps(data), headers=headers)
+	return r.text
 
 
 def continue_commit_prompt():
