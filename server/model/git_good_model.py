@@ -106,7 +106,7 @@ def get_csv_data():
 
     return df
 
-def has_swear(msg, weight):
+def commit_body_has_swear(msg, weight):
     with open('../../data_attr/3ds_badwordlist0.txt', 'r') as content_file:
         content = content_file.read().replace("\r", "")
         content = content.split("\n")
@@ -191,20 +191,24 @@ def commit_body_has_present_tense(msg, weight):
 def label_data(df, good_thresh = .5):
     label = []
 
+    negfunctions = [(commit_body_has_swear, 1)]
+
     functions = [
-        (has_swear, .16),
-        (commit_body_has_present_tense, .16),
-        (commit_body_has_bullet_points, .16),
-        (commit_subject_is_50chars_long, .16),
-        (commit_subject_doesnt_end_with_period, .16),
-        (commit_subject_starts_with_capital, .16),
+        (commit_body_has_present_tense, .2),
+        (commit_body_has_bullet_points, .2),
+        (commit_subject_is_50chars_long, .2),
+        (commit_subject_doesnt_end_with_period, .2),
+        (commit_subject_starts_with_capital, .2),
     ]
 
     for index, row in df.iterrows():
         score = 0
         for funct, weight in functions:
             score += funct(row['msg'], weight)
+        for funct, weight in negfunctions:
+            score *= funct(row['msg'], weight)
         label.append(1 if score > good_thresh else 0)
+
     df['label'] = pd.Series(label)
     return df
 
