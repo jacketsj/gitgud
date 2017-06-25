@@ -19,7 +19,6 @@ def postMessage(message):
 
 
 def continue_commit_prompt():
-	print "Your commit message is bad. Do you want to continue your commit? [Y/n]"
 	valid = {"": True, "yes": True, "y": True, "no": False, "n": False}
 	sys.stdin = open("/dev/tty", "r")
 	choice = raw_input().lower()
@@ -36,12 +35,22 @@ def main():
 		txt_file.close()
 
 	# check thie return score
-	if postMessage(commit_message):
+	if postMessage(commit_message > 0.8):
 		# commit if score is good
-		print "Your commit message is good."
+		print "Your commit message is quite good."
 		sys.exit(0)
+	else if postMessage(commit_message >= 0.5):
+		# commit if score is good
+		print "Your commit message could be improved. Do you want to continue your commit? [Y/n]"
+		if continue_commit_prompt():
+			sys.exit(0)
+		else:
+			# abort if user says no
+			print("Commit abort.")
+			sys.exit(1)
 	else:
 		# otherwise, ask user if they want to continue the commit
+		print "Your commit message is bad. Do you want to continue your commit? [Y/n]"
 		if continue_commit_prompt():
 			sys.exit(0)
 		else:
