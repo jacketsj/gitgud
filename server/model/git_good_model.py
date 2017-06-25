@@ -10,6 +10,7 @@ import random
 import nltk
 from nltk import word_tokenize, pos_tag
 import json
+import time
 
 GOOD = 1
 BAD = 0
@@ -40,9 +41,9 @@ class GitGudModel():
 
 
     def engineer_features(self, df):
-        # keyword_counts = self._get_keywords(df['msg'])
-        # df['kwcount'] = pd.Series(keyword_counts)
-        df['kwcount'] = pd.Series(np.zeros(df.shape[0]))
+        keyword_counts = self._get_keywords(df['msg'])
+        df['kwcount'] = pd.Series(keyword_counts)
+        # df['kwcount'] = pd.Series(np.zeros(df.shape[0]))
 
         return df
 
@@ -97,7 +98,7 @@ class GitGudModel():
 
     def report_scores(self, y_pred, y_actual):
 
-        precision, recall, fscore, _ = score(y_actual, y_pred)
+        precision, recall, fscore, _ = score(y_actual, y_pred, labels=[0, 1])
 
         print('precision: {}'.format(precision))
         print('recall: {}'.format(recall))
@@ -111,28 +112,6 @@ class GitGudModel():
         # print("Accuracy: ",correct/len(y_pred))
 
 
-def get_data():
-    # Dummy get data function
-    column_names = [
-        "id",
-        "msg",
-        "stars",
-        "forks",
-        "watchers",
-        "adds",
-        "dels"
-    ]
-
-    df = pd.DataFrame([
-                        ['22342', 'Hey good fix', '23', '43', '2', '23', '43'],
-                        ['5435', 'Hey great fix', '300', '300', '300', '23', '43'],
-                        ['6546', 'Hey poop fix', '200', '200', '2000', '23', '43'],
-                        ['7453534', 'Hey man fix', '15', '64', '2', '23', '43'],
-                    ], columns=column_names)
-
-    return df
-
-
 def get_csv_data():
     # Dummy get data function
     column_names = [
@@ -143,9 +122,10 @@ def get_csv_data():
         "watchers"
     ]
 
-    df = pd.read_csv('../../data/linux-commits.csv', names=column_names)
+    df = pd.read_csv('../../git-csv-scraper/linux-commits2.csv', names=column_names)
 
     return df
+
 
 def commit_body_has_swear(msg, weight):
     with open('../../data_attr/3ds_badwordlist0.txt', 'r') as content_file:
@@ -158,6 +138,7 @@ def commit_body_has_swear(msg, weight):
         outcome = expon((1 - len(union) / len(s_msg)), 25)
     return outcome * weight
 
+
 def commit_subject_doesnt_end_with_period(msg, weight):
     # Split by \s\s
     msg = msg.split('  ')
@@ -169,6 +150,7 @@ def commit_subject_doesnt_end_with_period(msg, weight):
         outcome = 0
 
     return outcome * weight
+
 
 def commit_subject_is_50chars_long(msg, weight):
     # Assume subject is under 50 chars
@@ -183,6 +165,7 @@ def commit_subject_is_50chars_long(msg, weight):
         outcome = 0
 
     return outcome * weight
+
 
 def commit_body_has_bullet_points(msg, weight):
     outcome = 0
@@ -206,6 +189,7 @@ def commit_body_has_bullet_points(msg, weight):
 
     return outcome * weight
 
+
 def expon(x, k):
     pow = x
     for i in range (k): #constant time, 50 is arbitrarily chosen
@@ -219,6 +203,7 @@ def commit_subject_starts_with_capital(msg, weight):
          outcome = 0
      return outcome * weight
 
+
 def commit_body_has_present_tense(msg, weight):
     text = word_tokenize(msg)
     tagged = pos_tag(text)
@@ -229,7 +214,8 @@ def commit_body_has_present_tense(msg, weight):
 
     return expon((weight * present / total), 5)
 
-def label_data(df, good_thresh = .5):
+
+def label_data(df, good_thresh=.5):
     label = []
 
     negfunctions = [(commit_body_has_swear, 1)]
@@ -258,19 +244,31 @@ def main():
     # Instantiate the wrapper model
     model = GitGudModel()
 
+    print("Getting data!")
+
     # Read in the scrapped CSV data
     df = get_csv_data()
 
+    print("Labeling data")
+
     # Label the data
     df = label_data(df)
-
+    
+    print("Engineer features!")
+    
     # Engineer Features
     df = model.engineer_features(df)
 
+    print("Parse and split!")
+
     X_train, X_test, y_train, y_test = model.parse_and_split_data(df)
+
+    print("Training")
 
     # Train the model
     model = model.train(X_train, y_train)
+
+    print("Predict")
 
     # Predict on the model
     pred = model.predict(X_test)
@@ -279,4 +277,6 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.time()
     main()
+    print("Execution time: ", time.time() - start)
