@@ -35,7 +35,7 @@ class GitGudModel():
 
         y = df["label"]
 
-        X_train, X_test, y_train, y_test = train_test_split(mcl_transformed, y, test_size=0.2, random_state=random.randint(1, 10))
+        X_train, X_test, y_train, y_test = train_test_split(mcl_transformed, y, test_size=0.1, random_state=random.randint(1, 100))
 
         return (X_train, X_test, y_train, y_test)
 
@@ -111,130 +111,138 @@ class GitGudModel():
         #
         # print("Accuracy: ",correct/len(y_pred))
 
-
-def get_csv_data():
-    # Dummy get data function
-    column_names = [
-        "msg",
-        "id",
-        "stars",
-        "forks",
-        "watchers"
-    ]
-
-    df = pd.read_csv('../../git-csv-scraper/linux-commits2.csv', names=column_names)
-
-    return df
+    def predict_on_msg(self, msg):
+        msg_transformed = self._vect.fit_transform([[msg]])
+        msg_transformed = hstack((msg_transformed, np.array([0])[:,None]))
+        pred = self.predict(msg_transformed)
+        print(pred)
+        exit()
+        return 1
 
 
-def commit_body_has_swear(msg, weight):
-    with open('../../data_attr/3ds_badwordlist0.txt', 'r') as content_file:
-        content = content_file.read().replace("\r", "")
-        content = content.split("\n")
-        s = set(content)
-        msg = msg.split(' ')
-        s_msg = set(msg)
-        union = set.intersection(*[s, s_msg])
-        outcome = expon((1 - len(union) / len(s_msg)), 25)
-    return outcome * weight
+    def get_csv_data(self):
+        # Dummy get data function
+        column_names = [
+            "msg",
+            "id",
+            "stars",
+            "forks",
+            "watchers"
+        ]
+
+        df = pd.read_csv('../git-csv-scraper/microsoft-commits.csv', names=column_names)
+
+        return df
 
 
-def commit_subject_doesnt_end_with_period(msg, weight):
-    # Split by \s\s
-    msg = msg.split('  ')
-
-    # Assume subject doesnt end with period
-    outcome = 1
-
-    if msg[0].endswith('.'):
-        outcome = 0
-
-    return outcome * weight
-
-
-def commit_subject_is_50chars_long(msg, weight):
-    # Assume subject is under 50 chars
-    outcome = 1
-
-    # Split by \s\s
-    msg = msg.split('  ')
-
-    msglen = len(msg[0])
-
-    if msglen > 50:
-        outcome = 0
-
-    return outcome * weight
+    def commit_body_has_swear(self, msg, weight):
+        with open('../data_attr/3ds_badwordlist0.txt', 'r') as content_file:
+            content = content_file.read().replace("\r", "")
+            content = content.split("\n")
+            s = set(content)
+            msg = msg.split(' ')
+            s_msg = set(msg)
+            union = set.intersection(*[s, s_msg])
+            outcome = self.expon((1 - len(union) / len(s_msg)), 25)
+        return outcome * weight
 
 
-def commit_body_has_bullet_points(msg, weight):
-    outcome = 0
+    def commit_subject_doesnt_end_with_period(self, msg, weight):
+        # Split by \s\s
+        msg = msg.split('  ')
 
-    delimiter = [' - ', ' * ']
-
-    def has_delimiter(msg):
-        for d in delimiter:
-            # If delimiter exist
-            if msg.find(d) is not -1:
-                return True
-
-    def has_list(msg):
-        for d in delimiter:
-            # If message contains the delimiter more than once
-            if msg.find(d) > 1:
-                return True
-
-    if has_delimiter(msg) and has_list(msg):
+        # Assume subject doesnt end with period
         outcome = 1
 
-    return outcome * weight
+        if msg[0].endswith('.'):
+            outcome = 0
+
+        return outcome * weight
 
 
-def expon(x, k):
-    return x**(k+1)
+    def commit_subject_is_50chars_long(self, msg, weight):
+        # Assume subject is under 50 chars
+        outcome = 1
 
-def commit_subject_starts_with_capital(msg, weight):
-     if msg[0].isupper():
-         outcome = 1
-     else:
-         outcome = 0
-     return outcome * weight
+        # Split by \s\s
+        msg = msg.split('  ')
 
+        msglen = len(msg[0])
 
-def commit_body_has_present_tense(msg, weight):
-    text = word_tokenize(msg)
-    tagged = pos_tag(text)
-    present = len([word for word in tagged if word[1] in ["VBP", "VBZ","VBG", "VB"]])
-    total = len([word for word in tagged if word[1] in ["VBD", "VBN"]]) + present
-    if total == 0:
-        return weight
+        if msglen > 50:
+            outcome = 0
 
-    return expon((weight * present / total), 5)
+        return outcome * weight
 
 
-def label_data(df, good_thresh=.5):
-    label = []
+    def commit_body_has_bullet_points(self, msg, weight):
+        outcome = 0
 
-    negfunctions = [(commit_body_has_swear, 1)]
+        delimiter = [' - ', ' * ']
 
-    functions = [
-        (commit_body_has_present_tense, .2),
-        (commit_body_has_bullet_points, .2),
-        (commit_subject_is_50chars_long, .2),
-        (commit_subject_doesnt_end_with_period, .2),
-        (commit_subject_starts_with_capital, .2),
-    ]
+        def has_delimiter(msg):
+            for d in delimiter:
+                # If delimiter exist
+                if msg.find(d) is not -1:
+                    return True
 
-    for index, row in df.iterrows():
-        score = 0
-        for funct, weight in functions:
-            score += funct(row['msg'], weight)
-        for funct, weight in negfunctions:
-            score *= funct(row['msg'], weight)
-        label.append(GOOD if score > good_thresh else BAD)
+        def has_list(msg):
+            for d in delimiter:
+                # If message contains the delimiter more than once
+                if msg.find(d) > 1:
+                    return True
 
-    df['label'] = pd.Series(label)
-    return df
+        if has_delimiter(msg) and has_list(msg):
+            outcome = 1
+
+        return outcome * weight
+
+
+    def expon(self, x, k):
+        return x**(k+1)
+
+    def commit_subject_starts_with_capital(self, msg, weight):
+         if msg[0].isupper():
+             outcome = 1
+         else:
+             outcome = 0
+         return outcome * weight
+
+
+    def commit_body_has_present_tense(self, msg, weight):
+        text = word_tokenize(msg)
+        tagged = pos_tag(text)
+        present = len([word for word in tagged if word[1] in ["VBP", "VBZ","VBG", "VB"]])
+        total = len([word for word in tagged if word[1] in ["VBD", "VBN"]]) + present
+        if total == 0:
+            return weight
+
+        return self.expon((weight * present / total), 5)
+
+
+    def label_data(self, df, good_thresh=.5):
+        label = []
+
+        negfunctions = [(self.commit_body_has_swear, 1)]
+
+        functions = [
+            (self.commit_body_has_present_tense, .2),
+            (self.commit_body_has_bullet_points, .2),
+            (self.commit_subject_is_50chars_long, .2),
+            (self.commit_subject_doesnt_end_with_period, .2),
+            (self.commit_subject_starts_with_capital, .2),
+        ]
+
+        for index, row in df.iterrows():
+            score = 0
+            for funct, weight in functions:
+                score += funct(row['msg'], weight)
+            for funct, weight in negfunctions:
+                score *= funct(row['msg'], weight)
+            label.append(GOOD if score > good_thresh else BAD)
+
+        df['label'] = pd.Series(label)
+        return df
 
 
 def main():
@@ -244,12 +252,12 @@ def main():
     print("Getting data!")
 
     # Read in the scrapped CSV data
-    df = get_csv_data()
+    df = model.get_csv_data()
 
     print("Labeling data")
 
     # Label the data
-    df = label_data(df)
+    df = model.label_data(df)
     
     print("Engineer features!")
     
@@ -271,6 +279,7 @@ def main():
     pred = model.predict(X_test)
 
     model.report_scores(pred, y_test)
+
 
 
 if __name__ == '__main__':
